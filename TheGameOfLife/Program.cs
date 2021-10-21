@@ -5,104 +5,275 @@ namespace TheGameOfLife
 {
     class Program
     {
-        private static int columns;
-        private static int rows;
-        private static int sizeTable = columns = rows = 50;
-        static bool[,] firstGeneration;
-        static bool theLastCellisLife = true;
-        static void Main(string[] args)
+        private static int rows = 50;  // строка
+        private static int columns = 60; // колонка
+        private static int generationUpdate = 500; // ms
+        private static bool startGame = true;   
+        private static int[,] theFirstGeneration = new int[rows, columns];
+        private static int deadCells;
+
+        public static void Main(string[] args)
         {
-            int consoleWidth = rows;
-            int consoleHeight = columns;
-            bool startGame = true;
-            firstGeneration = new bool[rows, columns];
-
-#pragma warning disable CA1416 // Проверка совместимости платформы
-            Console.SetWindowSize(width: consoleWidth,
-                                  height: consoleHeight);
-
             Random rnd = new Random();
 
-            for (int x = 0; x < columns; x++)
+            for (int x = 0; x < rows; x++)
             {
-                for (int y = 0; y < rows; y++)
+                for(int y = 0; y < columns; y++)
                 {
-                    firstGeneration[x, y] = rnd.Next(0, 2) == 0;
-                    if (firstGeneration[x, y] == true)
-                        Console.Write(1);
-                    else if (firstGeneration[x, y] == false)
-                        Console.Write(0);
+                    theFirstGeneration[x, y] = rnd.Next(0, 2);
+                    Console.Write(theFirstGeneration[x, y]);
                 }
                 Console.WriteLine();
             }
+
             while (startGame)
             {
-                NextGeneration();
-                if (!theLastCellisLife)
+                TheNextGeneration();
+                if (deadCells == rows * columns )
+                {
                     startGame = false;
+                }
             }
         }
-        static void NextGeneration()
+        private static void TheNextGeneration()
         {
-            bool[,] nextGeneration;
-            nextGeneration = new bool[columns, rows];
-            int countHasLife = rows * columns;
-
-            Thread.Sleep(500);
+            Thread.Sleep(generationUpdate);
             Console.Clear();
 
-            for (int x = 0; x < columns; x++)
+            int[,] theNextGeneration = new int[rows, columns];
+            deadCells = 0;
+
+            for (int x = 0; x < rows; x++)
             {
-                for (int y = 0; y < rows; y++)
+                for (int y = 0; y < columns; y++)
                 {
-                    var countOfNeighbour = NumberOfNeighbour(x, y);
-                    var hasLife = firstGeneration[x, y];
+                    var countOfNeighbors = NumberOfNeighbors(x, y);
+                    var aLivingCell = theFirstGeneration[x, y];
 
-                    if (hasLife == false)
-                        countHasLife--;
+                    if (aLivingCell == 0)
+                        deadCells++;
 
-                    if (!hasLife && countOfNeighbour == 3)
+                    if (aLivingCell == 1 && countOfNeighbors == 3)
                     {
-                        nextGeneration[x, y] = true;
+                        theNextGeneration[x, y] = 1;
                         Console.Write(1);
                     }
-                    else if (hasLife && (countOfNeighbour < 2 || countOfNeighbour > 3))
+                    else if (aLivingCell == 1 && countOfNeighbors == 2 || countOfNeighbors == 3)
                     {
-                        nextGeneration[x, y] = false;
+                        theNextGeneration[x, y] = 1;
+                        Console.Write(1);
+                    }
+                    else if (aLivingCell == 1 && countOfNeighbors < 2 || countOfNeighbors > 3)
+                    {
+                        theNextGeneration[x, y] = 0;
                         Console.Write(0);
                     }
                     else
                     {
-                        nextGeneration[x, y] = firstGeneration[x, y];
                         Console.Write("-");
-                    }
+                    }    
                 }
+
                 Console.WriteLine();
             }
-            firstGeneration = nextGeneration;
-
-            if (countHasLife == 0)
-                theLastCellisLife = false;
-        }
-        static int NumberOfNeighbour(int x, int y)
-        {
-            int count = 0;
-
-            for (int i = -1; i < 2; i++)
+            if (theFirstGeneration == theNextGeneration)
             {
-                for (int j = -1; j < 2; j++)
-                {
-                    var col = (x + i + columns) % columns;
-                    var row = (y + j + rows) % rows;
-
-                    var isLifeCheking = col == x && row == y;
-                    var hasLife = firstGeneration[col, row];
-
-                    if (hasLife && !isLifeCheking)
-                        count++;
-                }
+                startGame = false;
             }
-            return count;
+
+            theFirstGeneration = theNextGeneration;
         }
+        private static int NumberOfNeighbors(int x, int y)
+        {
+            int[,]standartCells = new int[3, 3];
+            int[,] horizontalBorderCells = new int[2, 3];
+            int[,] verticalBorderCells = new int[3, 2];
+            int[,] angularCells = new int[2, 2];
+
+            int centreCell = theFirstGeneration[x, y];
+
+            int countForStandart = 9;
+            int countForHorizontalBorderCells = 6;
+            int countForVerticalBorderCells = 6;
+            int countForAngular = 4;
+
+            if (centreCell == 1)
+            {
+                countForStandart--;
+                countForHorizontalBorderCells--;
+                countForVerticalBorderCells--;
+                countForAngular--;
+            }
+
+            if ((x == 0 && y == 0))
+            {
+                for (int x1 = -1; x1 < 1; x1++)
+                {
+                    for (int y1 = -1; y1 < 1; y1++)
+                        angularCells[x1 + 1, y1 + 1] = theFirstGeneration[x - x1, y - y1];
+                }
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        if (angularCells[i, j] == 0)
+                            countForAngular--;
+                    }
+                }
+                return countForAngular;
+            }
+            else if (x == rows - 1 && y == columns - 1)
+            {
+                for (int x1 = -1; x1 < 1; x1++)
+                {
+                    for (int y1 = -1; y1 < 1; y1++)
+                        angularCells[x1 + 1, y1 + 1] = theFirstGeneration[x + x1, y + y1];
+                }
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        if (angularCells[i, j] == 0)
+                            countForAngular--;
+                    }
+                }
+                return countForAngular;
+            }
+            else if (x == rows - 1 && y == 0)
+            {
+                angularCells[0, 0] = theFirstGeneration[x - 1, y];
+                angularCells[0, 1] = theFirstGeneration[x, y];
+                angularCells[1, 0] = theFirstGeneration[x - 1, y + 1];
+                angularCells[1, 1] = theFirstGeneration[x, y + 1];
+
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        if (angularCells[i, j] == 0)
+                            countForAngular--;
+                    }
+                }
+                return countForAngular;
+            }
+            else if (x == 0 && y == columns - 1)
+            {
+                angularCells[0, 0] = theFirstGeneration[x, y - 1];
+                angularCells[0, 1] = theFirstGeneration[x, y];
+                angularCells[1, 0] = theFirstGeneration[x + 1, y - 1];
+                angularCells[1, 1] = theFirstGeneration[x + 1, y];
+
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        if (angularCells[i, j] == 0)
+                            countForAngular--;
+                    }
+                }
+                return countForAngular;
+            }
+
+            else if (x == 0 && y != 0 && y != columns - 1)
+            {
+                horizontalBorderCells[0, 0] = theFirstGeneration[x, y - 1];
+                horizontalBorderCells[0, 1] = theFirstGeneration[x, y];
+                horizontalBorderCells[0, 2] = theFirstGeneration[x, y + 1];
+                horizontalBorderCells[1, 0] = theFirstGeneration[x + 1, y - 1];
+                horizontalBorderCells[1, 1] = theFirstGeneration[x + 1, y];
+                horizontalBorderCells[1, 2] = theFirstGeneration[x + 1, y + 1];
+
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        if (horizontalBorderCells[i, j] == 0)
+                            countForHorizontalBorderCells--;
+                    }
+                }
+                return countForHorizontalBorderCells;
+            }
+            else if (x == 4 && y != 0 && y != columns - 1)
+            {
+                horizontalBorderCells[0, 0] = theFirstGeneration[x - 1, y - 1];
+                horizontalBorderCells[0, 1] = theFirstGeneration[x - 1, y];
+                horizontalBorderCells[0, 2] = theFirstGeneration[x - 1, y + 1];
+                horizontalBorderCells[1, 0] = theFirstGeneration[x, y - 1];
+                horizontalBorderCells[1, 1] = theFirstGeneration[x, y];
+                horizontalBorderCells[1, 2] = theFirstGeneration[x, y + 1];
+
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        if (horizontalBorderCells[i, j] == 0)
+                            countForHorizontalBorderCells--;
+                    }
+                }
+                return countForHorizontalBorderCells;
+            }
+
+            else if (x != 0 && x != rows - 1 && y == 0)
+            {
+                verticalBorderCells[0, 0] = theFirstGeneration[x - 1, y];
+                verticalBorderCells[0, 1] = theFirstGeneration[x - 1, y + 1];
+                verticalBorderCells[1, 0] = theFirstGeneration[x, y];
+                verticalBorderCells[1, 1] = theFirstGeneration[x, y + 1];
+                verticalBorderCells[2, 0] = theFirstGeneration[x + 1, y];
+                verticalBorderCells[2, 1] = theFirstGeneration[x + 1, y + 1];
+
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        if (verticalBorderCells[i, j] == 0)
+                            countForVerticalBorderCells--;
+                    }
+                }
+                return countForVerticalBorderCells;
+            }
+            else if (x != 0 && x != rows - 1 && y == 4)
+            {
+                verticalBorderCells[0, 0] = theFirstGeneration[x - 1, y - 1];
+                verticalBorderCells[0, 1] = theFirstGeneration[x - 1, y];
+                verticalBorderCells[1, 0] = theFirstGeneration[x, y - 1];
+                verticalBorderCells[1, 1] = theFirstGeneration[x, y];
+                verticalBorderCells[2, 0] = theFirstGeneration[x + 1, y - 1];
+                verticalBorderCells[2, 1] = theFirstGeneration[x + 1, y];
+
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 2; j++)
+                    {
+                        if (verticalBorderCells[i, j] == 0)
+                            countForVerticalBorderCells--;
+                    }
+                }
+                return countForVerticalBorderCells;
+            }
+
+            else if ((x > 0 && y != 0) && (x != rows - 1 && y != columns - 1))
+            {
+                for (int x1 = -1; x1 < 2; x1++)
+                {
+                    for (int y1 = -1; y1 < 2; y1++)
+                    {
+                        standartCells[x1 + 1, y1 + 1] = theFirstGeneration[x + x1, y + y1];
+                    }
+                }
+
+                for (int i = 0; i < 3; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        if (standartCells[i, j] == 0)
+                            countForStandart--;
+                    }
+                }
+                return countForStandart;
+            }
+
+            return 0;
+        }  
     }
 }
