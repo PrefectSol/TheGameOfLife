@@ -1,40 +1,45 @@
-﻿using System;
-using System.Threading;
-
-namespace TheGameOfLife
+﻿namespace TheGameOfLife
 {
-    class Program
+    using System;
+    using System.Threading;
+
+    /// <summary>
+    /// Entry point.
+    /// </summary>
+    internal class Program
     {
         private static int rows = 50;  // строка
         private static int columns = 60; // колонка
         private static int generationUpdate = 500; // ms
-        private static bool startGame = true;   
+        private static bool startGame = true;
         private static int[,] theFirstGeneration = new int[rows, columns];
         private static int deadCells;
 
         public static void Main(string[] args)
         {
-            Random rnd = new Random();
+            Random rnd = new ();
 
             for (int x = 0; x < rows; x++)
             {
-                for(int y = 0; y < columns; y++)
+                for (int y = 0; y < columns; y++)
                 {
                     theFirstGeneration[x, y] = rnd.Next(0, 2);
                     Console.Write(theFirstGeneration[x, y]);
                 }
+
                 Console.WriteLine();
             }
 
             while (startGame)
             {
                 TheNextGeneration();
-                if (deadCells == rows * columns )
+                if (deadCells == rows * columns)
                 {
                     startGame = false;
                 }
             }
         }
+
         private static void TheNextGeneration()
         {
             Thread.Sleep(generationUpdate);
@@ -51,19 +56,21 @@ namespace TheGameOfLife
                     var aLivingCell = theFirstGeneration[x, y];
 
                     if (aLivingCell == 0)
+                    {
                         deadCells++;
+                    }
 
                     if (aLivingCell == 1 && countOfNeighbors == 3)
                     {
                         theNextGeneration[x, y] = 1;
                         Console.Write(1);
                     }
-                    else if (aLivingCell == 1 && countOfNeighbors == 2 || countOfNeighbors == 3)
+                    else if ((aLivingCell == 1 && countOfNeighbors == 2) || countOfNeighbors == 3)
                     {
                         theNextGeneration[x, y] = 1;
                         Console.Write(1);
                     }
-                    else if (aLivingCell == 1 && countOfNeighbors < 2 || countOfNeighbors > 3)
+                    else if ((aLivingCell == 1 && countOfNeighbors < 2) || countOfNeighbors > 3)
                     {
                         theNextGeneration[x, y] = 0;
                         Console.Write(0);
@@ -71,11 +78,12 @@ namespace TheGameOfLife
                     else
                     {
                         Console.Write("-");
-                    }    
+                    }
                 }
 
                 Console.WriteLine();
             }
+
             if (theFirstGeneration == theNextGeneration)
             {
                 startGame = false;
@@ -83,9 +91,10 @@ namespace TheGameOfLife
 
             theFirstGeneration = theNextGeneration;
         }
+
         private static int NumberOfNeighbors(int x, int y)
         {
-            int[,]standartCells = new int[3, 3];
+            int[,] standartCells = new int[3, 3];
             int[,] horizontalBorderCells = new int[2, 3];
             int[,] verticalBorderCells = new int[3, 2];
             int[,] angularCells = new int[2, 2];
@@ -105,21 +114,27 @@ namespace TheGameOfLife
                 countForAngular--;
             }
 
-            if ((x == 0 && y == 0))
+            if (x == 0 && y == 0)
             {
                 for (int x1 = -1; x1 < 1; x1++)
                 {
                     for (int y1 = -1; y1 < 1; y1++)
+                    {
                         angularCells[x1 + 1, y1 + 1] = theFirstGeneration[x - x1, y - y1];
+                    }
                 }
+
                 for (int i = 0; i < 2; i++)
                 {
                     for (int j = 0; j < 2; j++)
                     {
                         if (angularCells[i, j] == 0)
+                        {
                             countForAngular--;
+                        }
                     }
                 }
+
                 return countForAngular;
             }
             else if (x == rows - 1 && y == columns - 1)
@@ -127,16 +142,22 @@ namespace TheGameOfLife
                 for (int x1 = -1; x1 < 1; x1++)
                 {
                     for (int y1 = -1; y1 < 1; y1++)
+                    {
                         angularCells[x1 + 1, y1 + 1] = theFirstGeneration[x + x1, y + y1];
+                    }
                 }
+
                 for (int i = 0; i < 2; i++)
                 {
                     for (int j = 0; j < 2; j++)
                     {
                         if (angularCells[i, j] == 0)
+                        {
                             countForAngular--;
+                        }
                     }
                 }
+
                 return countForAngular;
             }
             else if (x == rows - 1 && y == 0)
@@ -151,9 +172,12 @@ namespace TheGameOfLife
                     for (int j = 0; j < 2; j++)
                     {
                         if (angularCells[i, j] == 0)
+                        {
                             countForAngular--;
+                        }
                     }
                 }
+
                 return countForAngular;
             }
             else if (x == 0 && y == columns - 1)
@@ -168,12 +192,14 @@ namespace TheGameOfLife
                     for (int j = 0; j < 2; j++)
                     {
                         if (angularCells[i, j] == 0)
+                        {
                             countForAngular--;
+                        }
                     }
                 }
+
                 return countForAngular;
             }
-
             else if (x == 0 && y != 0 && y != columns - 1)
             {
                 horizontalBorderCells[0, 0] = theFirstGeneration[x, y - 1];
@@ -188,9 +214,12 @@ namespace TheGameOfLife
                     for (int j = 0; j < 3; j++)
                     {
                         if (horizontalBorderCells[i, j] == 0)
+                        {
                             countForHorizontalBorderCells--;
+                        }
                     }
                 }
+
                 return countForHorizontalBorderCells;
             }
             else if (x == 4 && y != 0 && y != columns - 1)
@@ -207,12 +236,14 @@ namespace TheGameOfLife
                     for (int j = 0; j < 3; j++)
                     {
                         if (horizontalBorderCells[i, j] == 0)
+                        {
                             countForHorizontalBorderCells--;
+                        }
                     }
                 }
+
                 return countForHorizontalBorderCells;
             }
-
             else if (x != 0 && x != rows - 1 && y == 0)
             {
                 verticalBorderCells[0, 0] = theFirstGeneration[x - 1, y];
@@ -227,9 +258,12 @@ namespace TheGameOfLife
                     for (int j = 0; j < 2; j++)
                     {
                         if (verticalBorderCells[i, j] == 0)
+                        {
                             countForVerticalBorderCells--;
+                        }
                     }
                 }
+
                 return countForVerticalBorderCells;
             }
             else if (x != 0 && x != rows - 1 && y == 4)
@@ -246,12 +280,14 @@ namespace TheGameOfLife
                     for (int j = 0; j < 2; j++)
                     {
                         if (verticalBorderCells[i, j] == 0)
+                        {
                             countForVerticalBorderCells--;
+                        }
                     }
                 }
+
                 return countForVerticalBorderCells;
             }
-
             else if ((x > 0 && y != 0) && (x != rows - 1 && y != columns - 1))
             {
                 for (int x1 = -1; x1 < 2; x1++)
@@ -267,13 +303,16 @@ namespace TheGameOfLife
                     for (int j = 0; j < 3; j++)
                     {
                         if (standartCells[i, j] == 0)
+                        {
                             countForStandart--;
+                        }
                     }
                 }
+
                 return countForStandart;
             }
 
             return 0;
-        }  
+        }
     }
 }
