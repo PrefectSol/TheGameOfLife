@@ -8,20 +8,20 @@
     /// </summary>
     internal class Program
     {
-        private static int rows = 50;  // строка
-        private static int columns = 60; // колонка
-        private static int generationUpdate = 500; // ms
+        private static readonly int Rows = 50;
+        private static readonly int Columns = 120;
+        private static readonly int GenerationUpdate = 500; // ms
         private static bool startGame = true;
-        private static int[,] theFirstGeneration = new int[rows, columns];
+        private static int[,] theFirstGeneration = new int[Rows, Columns];
         private static int deadCells;
 
-        public static void Main(string[] args)
+        public static void Main()
         {
             Random rnd = new ();
 
-            for (int x = 0; x < rows; x++)
+            for (int x = 0; x < Rows; x++)
             {
-                for (int y = 0; y < columns; y++)
+                for (int y = 0; y < Columns; y++)
                 {
                     theFirstGeneration[x, y] = rnd.Next(0, 2);
                     Console.Write(theFirstGeneration[x, y]);
@@ -33,7 +33,7 @@
             while (startGame)
             {
                 TheNextGeneration();
-                if (deadCells == rows * columns)
+                if (deadCells == Rows * Columns)
                 {
                     startGame = false;
                 }
@@ -42,15 +42,15 @@
 
         private static void TheNextGeneration()
         {
-            Thread.Sleep(generationUpdate);
+            Thread.Sleep(GenerationUpdate);
             Console.Clear();
 
-            int[,] theNextGeneration = new int[rows, columns];
+            int[,] theNextGeneration = new int[Rows, Columns];
             deadCells = 0;
 
-            for (int x = 0; x < rows; x++)
+            for (int x = 0; x < Rows; x++)
             {
-                for (int y = 0; y < columns; y++)
+                for (int y = 0; y < Columns; y++)
                 {
                     var countOfNeighbors = NumberOfNeighbors(x, y);
                     var aLivingCell = theFirstGeneration[x, y];
@@ -137,7 +137,7 @@
 
                 return countForAngular;
             }
-            else if (x == rows - 1 && y == columns - 1)
+            else if (x == Rows - 1 && y == Columns - 1)
             {
                 for (int x1 = -1; x1 < 1; x1++)
                 {
@@ -160,7 +160,7 @@
 
                 return countForAngular;
             }
-            else if (x == rows - 1 && y == 0)
+            else if (x == Rows - 1 && y == 0)
             {
                 angularCells[0, 0] = theFirstGeneration[x - 1, y];
                 angularCells[0, 1] = theFirstGeneration[x, y];
@@ -180,7 +180,7 @@
 
                 return countForAngular;
             }
-            else if (x == 0 && y == columns - 1)
+            else if (x == 0 && y == Columns - 1)
             {
                 angularCells[0, 0] = theFirstGeneration[x, y - 1];
                 angularCells[0, 1] = theFirstGeneration[x, y];
@@ -200,7 +200,7 @@
 
                 return countForAngular;
             }
-            else if (x == 0 && y != 0 && y != columns - 1)
+            else if (x == 0 && y != 0 && y != Columns - 1)
             {
                 horizontalBorderCells[0, 0] = theFirstGeneration[x, y - 1];
                 horizontalBorderCells[0, 1] = theFirstGeneration[x, y];
@@ -222,7 +222,7 @@
 
                 return countForHorizontalBorderCells;
             }
-            else if (x == 4 && y != 0 && y != columns - 1)
+            else if (x == 4 && y != 0 && y != Columns - 1)
             {
                 horizontalBorderCells[0, 0] = theFirstGeneration[x - 1, y - 1];
                 horizontalBorderCells[0, 1] = theFirstGeneration[x - 1, y];
@@ -244,7 +244,7 @@
 
                 return countForHorizontalBorderCells;
             }
-            else if (x != 0 && x != rows - 1 && y == 0)
+            else if (x != 0 && x != Rows - 1 && y == 0)
             {
                 verticalBorderCells[0, 0] = theFirstGeneration[x - 1, y];
                 verticalBorderCells[0, 1] = theFirstGeneration[x - 1, y + 1];
@@ -266,7 +266,7 @@
 
                 return countForVerticalBorderCells;
             }
-            else if (x != 0 && x != rows - 1 && y == 4)
+            else if (x != 0 && x != Rows - 1 && y == 4)
             {
                 verticalBorderCells[0, 0] = theFirstGeneration[x - 1, y - 1];
                 verticalBorderCells[0, 1] = theFirstGeneration[x - 1, y];
@@ -288,7 +288,7 @@
 
                 return countForVerticalBorderCells;
             }
-            else if ((x > 0 && y != 0) && (x != rows - 1 && y != columns - 1))
+            else if ((x > 0 && y != 0) && (x != Rows - 1 && y != Columns - 1))
             {
                 for (int x1 = -1; x1 < 2; x1++)
                 {
